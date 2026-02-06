@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dipak Steel Furniture - Premium Design System
+   Color Palette: Deep charcoal, warm bronze accent, off-white backgrounds
+   All colors in HSL format
+*/
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --background: 40 20% 98%;
+    --foreground: 220 20% 15%;
+
+    /* Cards & Popovers */
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
+
+    /* Primary - Deep Charcoal/Slate */
+    --primary: 220 15% 20%;
+    --primary-foreground: 40 20% 98%;
+
+    /* Secondary - Light Gray */
+    --secondary: 40 10% 94%;
+    --secondary-foreground: 220 15% 20%;
+
+    /* Muted - Soft Gray */
+    --muted: 40 10% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    /* Accent - Warm Bronze/Copper */
+    --accent: 30 60% 45%;
+    --accent-foreground: 40 20% 98%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 30 60% 45%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-background: 220 15% 18%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 30 60% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 25%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 15% 25%;
+    --sidebar-ring: 30 60% 50%;
+
+    /* Custom Brand Colors */
+    --bronze: 30 60% 45%;
+    --bronze-light: 30 50% 60%;
+    --bronze-dark: 30 70% 35%;
+    --charcoal: 220 15% 20%;
+    --charcoal-light: 220 10% 35%;
+    --slate: 220 10% 30%;
+  }
+
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 40 20% 95%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 40 20% 95%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 40 20% 95%;
+
+    --primary: 40 20% 95%;
+    --primary-foreground: 220 15% 15%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 40 20% 95%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 40 10% 60%;
+
+    --accent: 30 60% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 30 60% 50%;
+
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 30 60% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 30 60% 55%;
+
+    --bronze: 30 60% 50%;
+    --bronze-light: 30 50% 65%;
+    --bronze-dark: 30 70% 40%;
+    --charcoal: 220 15% 25%;
+    --charcoal-light: 220 10% 40%;
+    --slate: 220 10% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gradient-bronze {
+    background: linear-gradient(135deg, hsl(var(--bronze-dark)), hsl(var(--bronze)), hsl(var(--bronze-light)));
+  }
+  
+  .gradient-charcoal {
+    background: linear-gradient(135deg, hsl(var(--charcoal)), hsl(var(--slate)));
+  }
+}
