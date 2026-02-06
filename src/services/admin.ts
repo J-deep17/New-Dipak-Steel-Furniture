@@ -12,6 +12,7 @@ export interface CreateProductDTO {
 
 export interface UpdateProductDTO extends Partial<CreateProductDTO> {
     id: string;
+    variants?: any[];
 }
 
 export const adminService = {
@@ -54,7 +55,11 @@ export const adminService = {
         if (error) {
             console.warn('Backend function failed, falling back to direct DB', error);
             // Fallback to direct DB if function fails (e.g. not deployed)
-            return await supabase.from('products').select('*, categories(*)').eq('is_active', true);
+            return await supabase
+                .from('products')
+                .select('*, categories(*), variants:product_variants(*)')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
         }
         return { data, error: null };
     },

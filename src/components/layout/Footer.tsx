@@ -1,11 +1,22 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock, Download, Instagram, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Download, Instagram, MessageCircle, Facebook, Linkedin, Twitter, Youtube, Pin } from "lucide-react";
+import { footerService } from "@/services/footer";
 import { useQuery } from "@tanstack/react-query";
 import { legalService } from "@/services/legal";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 
+
+const ICON_MAP: Record<string, any> = {
+  facebook: Facebook,
+  instagram: Instagram,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  youtube: Youtube,
+  whatsapp: MessageCircle,
+  pinterest: Pin,
+};
 
 const quickLinks = [
   { name: "About Us", path: "/about" },
@@ -22,6 +33,11 @@ const Footer = () => {
   const { data: legalPages } = useQuery({
     queryKey: ['footer-legal-pages'],
     queryFn: legalService.getPublishedPages
+  });
+
+  const { data: socialLinks } = useQuery({
+    queryKey: ['footer-links-public'],
+    queryFn: footerService.getFooterLinks
   });
 
   return (
@@ -58,26 +74,25 @@ const Footer = () => {
               </a>
             </Button>
 
+
             {/* Social Media Icons */}
             <div className="flex items-center gap-3 pt-2">
-              <a
-                href="https://www.instagram.com/dipak.steel.furniture"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 text-primary-foreground transition-all hover:bg-[#E4405F] hover:text-white hover:scale-110"
-                aria-label="Follow us on Instagram"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://wa.me/919824044585?text=Hi%2C%20I%27m%20interested%20in%20your%20furniture%20products."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 text-primary-foreground transition-all hover:bg-[#25D366] hover:text-white hover:scale-110"
-                aria-label="Chat on WhatsApp"
-              >
-                <MessageCircle className="h-5 w-5" />
-              </a>
+              {socialLinks?.map((link) => {
+                const Icon = ICON_MAP[link.icon] || MessageCircle;
+                return (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 text-primary-foreground transition-all hover:bg-white hover:text-primary hover:scale-110"
+                    aria-label={`Follow us on ${link.platform}`}
+                    title={link.platform}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 

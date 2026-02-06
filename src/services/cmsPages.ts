@@ -2,6 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Type definitions for CMS page content
 
+export interface HomePageContent {
+    seo: { title: string; description: string };
+    hero_section: { title: string; subtitle: string; }; // Additional text not in main table
+    welcome_section: { heading: string; description: string };
+}
+
+
 export interface AboutPageContent {
     hero: { heading: string; subheading: string };
     who_we_are: { heading: string; paragraph1: string; paragraph2: string; paragraph3: string };
@@ -55,9 +62,9 @@ export interface ContactPageContent {
     form_heading: string;
 }
 
-export type PageKey = 'about_page' | 'philosophy_page' | 'materials_page' | 'quality_page' | 'contact_page';
+export type PageKey = 'home_page' | 'about_page' | 'philosophy_page' | 'materials_page' | 'quality_page' | 'contact_page';
 
-export type PageContent = AboutPageContent | PhilosophyPageContent | MaterialsPageContent | QualityPageContent | ContactPageContent;
+export type PageContent = HomePageContent | AboutPageContent | PhilosophyPageContent | MaterialsPageContent | QualityPageContent | ContactPageContent;
 
 export interface CMSPage {
     id: string;

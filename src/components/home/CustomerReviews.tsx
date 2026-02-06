@@ -1,58 +1,26 @@
 import { Star, Quote } from "lucide-react";
-import { TestimonialData } from "@/services/cms";
+import { useQuery } from "@tanstack/react-query";
+import { testimonialsService } from "@/services/testimonials";
 
-interface CustomerReviewsProps {
-  testimonials?: TestimonialData[];
-}
+const CustomerReviews = () => {
+  const { data: testimonials } = useQuery({
+    queryKey: ['testimonials-public'],
+    queryFn: testimonialsService.getTestimonials
+  });
 
-const defaultReviews = [
-  {
-    id: "default-1",
-    name: "Rajesh Patel",
-    message:
-      "Excellent quality executive chairs! We ordered 50 chairs for our new office and the durability is outstanding. Highly recommend Dipak Steel Furniture.",
-    rating: 5,
-  },
-  {
-    id: "default-2",
-    name: "Priya Sharma",
-    message:
-      "We furnished our entire school with their classroom benches and chairs. The build quality is perfect for heavy daily use. Great value for money!",
-    rating: 5,
-  },
-  {
-    id: "default-3",
-    name: "Dr. Amit Desai",
-    message:
-      "The institutional seating and steel beds we purchased are exactly what we needed. Durable, easy to clean, and very comfortable for patients.",
-    rating: 5,
-  },
-  {
-    id: "default-4",
-    name: "Meera Joshi",
-    message:
-      "I've been recommending Dipak Steel Furniture to all my clients. Their sofa sets and almirahs are stylish and built to last. Excellent craftsmanship!",
-    rating: 5,
-  },
-  {
-    id: "default-5",
-    name: "Vikram Singh",
-    message:
-      "Our startup ordered task chairs and workstations for 100+ employees. The ergonomic design has really improved employee comfort and productivity.",
-    rating: 5,
-  },
-  {
-    id: "default-6",
-    name: "Anita Mehta",
-    message:
-      "The dining sets and cafe chairs are perfect for our restaurants. Easy maintenance and they look great even after years of heavy use.",
-    rating: 5,
-  },
-];
+  // Fallback or Loading state could be handled, but user asked for graceful empty handling.
+  // If no testimonials, we can hide the section or show nothing. 
+  // However, plan said "Fetch only testimonials...". 
+  // Let's use the fetched data if available.
 
-const CustomerReviews = ({ testimonials }: CustomerReviewsProps) => {
-  // Use CMS testimonials if available, otherwise use defaults
-  const reviews = testimonials && testimonials.length > 0 ? testimonials : defaultReviews;
+  if (testimonials && testimonials.length === 0) {
+    return null; // Gracefully handle empty state
+  }
+
+  const reviews = testimonials || []; // If loading or undefined, show empty or handle loading. 
+  // Actually, creating a skeleton or just not rendering until loaded is better.
+  // Given the requirement "Gracefully handle empty states", returning null if no data is a valid strategy.
+
 
   return (
     <section className="bg-secondary/50 py-16 md:py-24">
@@ -74,7 +42,7 @@ const CustomerReviews = ({ testimonials }: CustomerReviewsProps) => {
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="relative rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="relative rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col h-full"
             >
               {/* Quote Icon */}
               <Quote className="absolute right-4 top-4 h-8 w-8 text-accent/20" />
@@ -90,11 +58,38 @@ const CustomerReviews = ({ testimonials }: CustomerReviewsProps) => {
               </div>
 
               {/* Review Text */}
-              <p className="mb-6 text-muted-foreground">"{review.message}"</p>
+              <p className="mb-6 text-muted-foreground flex-grow">"{review.review_text}"</p>
 
               {/* Reviewer Info */}
-              <div className="border-t border-border pt-4">
-                <p className="font-semibold text-foreground">{review.name}</p>
+              <div className="border-t border-border pt-4 mt-auto">
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  {review.photo_url ? (
+                    <img
+                      src={review.photo_url}
+                      alt={review.name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
+                      {review.name.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="font-semibold text-foreground text-base testimonial-name">{review.name}</p>
+                    {(review.designation || review.company) && (
+                      <p className="text-sm text-muted-foreground font-normal testimonial-role">
+                        {review.designation}
+                        {review.designation && review.company && ", "}
+                        {review.company}
+                      </p>
+                    )}
+                    {review.city && (
+                      <p className="text-[13px] text-accent font-medium uppercase tracking-wide testimonial-location">{review.city}</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))}

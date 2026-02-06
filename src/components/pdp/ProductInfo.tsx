@@ -35,6 +35,11 @@ interface ProductInfoProps {
     pincode_placeholder: string;
     delivery_button_text: string;
   };
+  selectedVariantId?: string | null;
+  selectedVariant?: any;
+  onVariantChange?: (id: string) => void;
+  rating?: number;
+  totalReviews?: number;
 }
 
 const ProductInfo = ({
@@ -47,17 +52,29 @@ const ProductInfo = ({
   isInWishlist,
   onToggleWishlist,
   pageSettings,
+  selectedVariantId,
+  selectedVariant,
+  onVariantChange,
+  rating = 0,
+  totalReviews = 0,
 }: ProductInfoProps) => {
   const [pincode, setPincode] = useState("");
   const [deliveryInfo, setDeliveryInfo] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState(
-    product.colorVariants?.[0]?.color || null
-  );
 
-  // Mock pricing (since no price in data, we'll show "Get Quote")
-  const hasDiscount = false;
-  const mrp = null;
-  const salePrice = null;
+  // Pricing Logic
+  const hasDiscount = product.discount_percent > 0; // Check DB discount logic if available
+  // Calculate price based on variant override if exists
+  const currentPrice = (selectedVariant?.price !== null && selectedVariant?.price !== undefined)
+    ? selectedVariant.price
+    : product.price;
+
+  const mrp = product.mrp; // Assuming MRP is on product for now
+
+  // Stock Logic
+  const isVariantActive = selectedVariant ? selectedVariant.is_active : true;
+  const variantStock = selectedVariant ? selectedVariant.stock : null; // If null, assume unlimited/managed elsewhere
+  // Only show out of stock if we are tracking stock (stock !== null) and it is <= 0, or if strictly inactive
+  const isOutOfStock = (!isVariantActive) || (variantStock !== null && variantStock <= 0);
 
   const checkDelivery = () => {
     if (pincode.length !== 6) {
@@ -78,7 +95,7 @@ const ProductInfo = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mb-2">
         {(product as any).backHeight && (
           <Badge variant="secondary">
             {(product as any).backHeight === "HB"
@@ -89,38 +106,31 @@ const ProductInfo = ({
           </Badge>
         )}
         <Badge variant="outline">{(product as any).category?.name || pageSettings?.product_tag_label || "Furniture"}</Badge>
+        {isOutOfStock && <Badge variant="destructive">Out of Stock</Badge>}
       </div>
 
-      <div className="flex justify-between items-start gap-4">
+      <div>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">
           {product.title}
         </h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full hover:bg-red-50 hover:text-red-500 transition-colors"
-          onClick={onToggleWishlist}
-          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Star className={cn("h-6 w-6", isInWishlist ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
-          {/* Note: User usually expects Heart for wishlist, but Star is imported. I'll switch to Heart if available or stick to Star */}
-        </Button>
       </div>
 
       {/* Price Section */}
       <div className="p-4 bg-muted/50 rounded-xl space-y-2">
         <div className="flex items-baseline gap-3">
           <span className="text-3xl font-bold text-primary">
-            {formatCurrency(product.price)}
+            {formatCurrency(currentPrice)}
           </span>
-          {product.mrp && product.mrp > product.price && (
+          {mrp && mrp > currentPrice && (
             <>
               <span className="text-lg text-muted-foreground line-through">
-                ₹{product.mrp.toLocaleString()}
+                {formatCurrency(mrp)}
               </span>
-              {product.discount_percent > 0 && (
+              {/* Calculate dynamic discount if price changed? Or just use static one */}
+              {/* For now, simplistic discount display */}
+              {((mrp - currentPrice) / mrp * 100) > 0 && (
                 <Badge className="bg-green-500 hover:bg-green-600">
-                  {product.discount_percent}% OFF
+                  {Math.round(((mrp - currentPrice) / mrp) * 100)}% OFF
                 </Badge>
               )}
             </>
@@ -132,24 +142,35 @@ const ProductInfo = ({
       </div>
 
       {/* Color Variants */}
-      {product.colorVariants && product.colorVariants.length > 1 && (
+      {product.variants && product.variants.length > 0 && (
         <div className="space-y-3">
           <p className="font-medium">
-            Color: <span className="text-muted-foreground">{selectedColor}</span>
+            Color: <span className="text-muted-foreground">
+              {product.variants.find((v: any) => v.id === selectedVariantId)?.color_name || "Select"}
+            </span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {product.colorVariants.map((variant: any) => (
+            {product.variants.map((variant: any) => (
               <button
-                key={variant.color}
-                onClick={() => setSelectedColor(variant.color)}
+                key={variant.id}
+                onClick={() => onVariantChange?.(variant.id)}
                 className={cn(
-                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all",
-                  selectedColor === variant.color
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:border-primary/50"
+                  "relative px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all flex items-center gap-2",
+                  selectedVariantId === variant.id
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border hover:border-primary/50",
+                  // Dim inactive/OOS variants?
+                  (!variant.is_active || (variant.stock !== null && variant.stock <= 0)) && "opacity-60 grayscale"
                 )}
+                title={variant.color_name}
               >
-                {variant.color}
+                {variant.color_hex && (
+                  <span
+                    className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+                    style={{ backgroundColor: variant.color_hex }}
+                  />
+                )}
+                {variant.color_name}
               </button>
             ))}
           </div>
@@ -198,7 +219,7 @@ const ProductInfo = ({
               size="icon"
               className="h-10 w-10 rounded-r-none"
               onClick={decrementQuantity}
-              disabled={quantity <= 1}
+              disabled={quantity <= 1 || isOutOfStock}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -208,14 +229,11 @@ const ProductInfo = ({
               size="icon"
               className="h-10 w-10 rounded-l-none"
               onClick={incrementQuantity}
-              disabled={quantity >= 100}
+              disabled={quantity >= 100 || isOutOfStock}
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <span className="text-sm text-muted-foreground">
-            (Min: 1, Max: 100)
-          </span>
         </div>
       </div>
 
@@ -225,8 +243,11 @@ const ProductInfo = ({
           size="lg"
           className="flex-1 h-12 text-base"
           onClick={onAddToCart}
+          disabled={isOutOfStock}
         >
-          {isInCart ? (
+          {isOutOfStock ? (
+            "Out of Stock"
+          ) : isInCart ? (
             <>
               <Check className="mr-2 h-5 w-5" />
               Added to Cart
@@ -243,6 +264,7 @@ const ProductInfo = ({
           variant="secondary"
           className="flex-1 h-12 text-base bg-green-600 hover:bg-green-700 text-white"
           onClick={onBuyNow}
+          disabled={isOutOfStock}
         >
           <Zap className="mr-2 h-5 w-5" />
           Buy Now via WhatsApp

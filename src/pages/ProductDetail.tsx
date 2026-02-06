@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { productService } from "@/services/products";
 import { analyticsService } from "@/services/analytics";
 import { productPageSettingsService } from "@/services/productPageSettings";
+import { reviewService } from "@/services/reviews";
 import Layout from "@/components/layout/Layout";
 import SEOHead from "@/components/seo/SEOHead";
 import { useCart } from "@/contexts/CartContext";
@@ -22,6 +23,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 const mapProductToUI = (product: any) => ({
   ...product,
   name: product.title,
+  price: product.base_price || product.price, // Use base_price
   category: product.category?.name || "Uncategorized",
   categorySlug: product.category?.slug,
   // Use DB key_features if available, else fallback
@@ -40,6 +42,7 @@ const mapProductToUI = (product: any) => ({
     coverage: product.warranty_coverage || [],
     care: product.warranty_care || []
   },
+  variants: product.variants || []
 });
 
 const ProductDetail = () => {
@@ -47,6 +50,10 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, isInCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
+  // Variant State Management
+  // Initialize with null, will update in useEffect/render logic if needed
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productSlug],
@@ -67,6 +74,20 @@ const ProductDetail = () => {
     queryFn: productPageSettingsService.getSettings,
   });
 
+  // Fetch Reviews
+  const { data: reviews = [], refetch: refetchReviews } = useQuery({
+    queryKey: ["reviews", product?.id],
+    queryFn: () => reviewService.getProductReviews(product!.id),
+    enabled: !!product?.id
+  });
+
+  // Fetch Rating
+  const { data: ratingData } = useQuery({
+    queryKey: ["rating", product?.id],
+    queryFn: () => reviewService.getProductRating(product!.id),
+    enabled: !!product?.id
+  });
+
   const { data: relatedProducts } = useQuery({
     queryKey: ["related-products", product?.category?.slug],
     queryFn: () => productService.getProducts({ categorySlug: product?.category?.slug }),
@@ -75,8 +96,18 @@ const ProductDetail = () => {
       products
         .filter(p => p.id !== product?.id)
         .slice(0, 4)
-        .map(mapProductToUI)
+        .map(mapProductToUI) // Re-using helper, though ideally we move this out
   });
+
+  // Auto-select first variant on load
+  // We need to calculate uiProduct early or use direct product data
+  const variants = product?.variants || [];
+  useEffect(() => {
+    if (variants && variants.length > 0 && !selectedVariantId) {
+      const activeVariant = variants.find((v: any) => v.is_active);
+      if (activeVariant) setSelectedVariantId(activeVariant.id);
+    }
+  }, [variants, selectedVariantId]);
 
   if (isLoading) {
     return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
@@ -102,18 +133,41 @@ const ProductDetail = () => {
   }
 
   const uiProduct = mapProductToUI(product);
-  const productImages = uiProduct.images;
+
+  const selectedVariant = uiProduct.variants?.find((v: any) => v.id === selectedVariantId);
+
+  // Determine images to display: Variant images -> Product images -> Fallback
+  // Ensure we flatten variant images effectively if they are arrays of objects with image_url
+  const variantImages = selectedVariant?.images?.map((img: any) => img.image_url) || [];
+  const displayImages = variantImages.length > 0
+    ? variantImages
+    : (uiProduct.images && uiProduct.images.length > 0 ? uiProduct.images : []);
+
+  const handleColorChange = (variantId: string) => {
+    setSelectedVariantId(variantId);
+  };
 
   const handleAddToCart = () => {
+    const currentPrice = (selectedVariant?.price !== null && selectedVariant?.price !== undefined)
+      ? selectedVariant.price
+      : uiProduct.price;
+
     for (let i = 0; i < quantity; i++) {
-      // Map back to what cart expects if needed, or update cart context type
+      // Prepare variant info
+      const variantData = selectedVariant ? {
+        variant_id: selectedVariant.id,
+        color_name: selectedVariant.color_name,
+        sku: selectedVariant.sku // Add SKU to cart if supported
+      } : {};
+
       addToCart({
         id: product.id,
         name: product.title,
-        price: product.price,
-        image: productImages[0],
+        price: currentPrice,
+        image: displayImages[0], // Use the first image of the variant or product
         category: uiProduct.category,
         description: product.short_description || "",
+        ...variantData
       } as any);
     }
   };
@@ -156,7 +210,11 @@ const ProductDetail = () => {
           <ProductBreadcrumb product={uiProduct as any} category={{ name: uiProduct.category, slug: uiProduct.categorySlug } as any} />
 
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
-            <ProductImageGallery images={productImages} productName={product.title} />
+            <ProductImageGallery
+              images={displayImages}
+              productName={product.title}
+              productId={product.id}
+            />
 
             <ProductInfo
               product={uiProduct as any}
@@ -168,10 +226,19 @@ const ProductDetail = () => {
               isInWishlist={isInWishlist(product.id)}
               onToggleWishlist={toggleWishlist}
               pageSettings={pageSettings}
+              selectedVariantId={selectedVariantId}
+              selectedVariant={selectedVariant}
+              onVariantChange={handleColorChange}
+              rating={ratingData?.average || 0}
+              totalReviews={ratingData?.count || 0}
             />
           </div>
 
-          <ProductTabs product={uiProduct as any} />
+          <ProductTabs
+            product={uiProduct as any}
+            reviews={reviews}
+            onReviewSuccess={refetchReviews}
+          />
 
           {relatedProducts && relatedProducts.length > 0 && (
             <RelatedProducts products={relatedProducts as any} />

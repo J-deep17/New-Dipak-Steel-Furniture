@@ -33,6 +33,9 @@ import AdminProductPageSettings from "./pages/admin/AdminProductPageSettings";
 import AdminLegalPages from "./pages/admin/AdminLegalPages";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminLogin from "./pages/admin/AdminLogin";
+import FooterSettings from "./pages/admin/FooterSettings";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 const queryClient = new QueryClient();
 
@@ -54,7 +57,10 @@ const App = () => (
               <Route path="hero" element={<AdminHero />} />
               <Route path="cms" element={<CMS />} />
               <Route path="legal" element={<AdminLegalPages />} />
+              <Route path="footer-settings" element={<FooterSettings />} />
+              <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="product-page-settings" element={<AdminProductPageSettings />} />
+              <Route path="reviews" element={<AdminReviews />} />
             </Route>
             <Route path="/admin/login" element={<AdminLogin />} />
 

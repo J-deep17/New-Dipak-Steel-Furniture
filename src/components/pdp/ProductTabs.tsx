@@ -5,14 +5,20 @@ import {
   Ruler,
   Wrench,
   ShieldCheck,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReviewsList from "../reviews/ReviewsList";
+import ReviewForm from "../reviews/ReviewForm";
+import { Review } from "@/services/reviews";
 
 interface ProductTabsProps {
   product: any;
+  reviews?: Review[];
+  onReviewSuccess?: () => void;
 }
 
-const ProductTabs = ({ product }: ProductTabsProps) => {
+const ProductTabs = ({ product, reviews = [], onReviewSuccess }: ProductTabsProps) => {
   // Parse specifications if it's an object, or use empty array
   const specifications = product.specifications
     ? Object.entries(product.specifications).map(([key, value]) => ({ label: key, value: String(value) }))
@@ -38,6 +44,9 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
           </TabsTrigger>
           <TabsTrigger value="warranty" className="flex-1 min-w-[120px]">
             Warranty
+          </TabsTrigger>
+          <TabsTrigger value="reviews" className="flex-1 min-w-[120px]">
+            Reviews ({reviews.length})
           </TabsTrigger>
         </TabsList>
 
@@ -166,6 +175,25 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reviews" className="mt-6">
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    Customer Reviews
+                  </h3>
+                  <ReviewsList reviews={reviews} />
+                </CardContent>
+              </Card>
+            </div>
+            <div>
+              <ReviewForm productId={product.id} onSuccess={onReviewSuccess || (() => { })} />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

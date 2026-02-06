@@ -45,12 +45,21 @@ const CartDrawer = () => {
                     key={item.product.id}
                     className="flex gap-3 p-3 rounded-lg border border-border bg-card"
                   >
+                    {/* Product Image */}
+                    <div className="h-16 w-16 rounded-md overflow-hidden border border-border flex-shrink-0">
+                      <img
+                        src={item.product.image || item.product.images?.[0] || item.product.image_url || "/placeholder.svg"}
+                        alt={item.product.title || item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-foreground truncate">
-                        {item.product.name}
+                        {item.product.title || item.product.name}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {item.product.category}
+                        {typeof item.product.category === 'object' ? item.product.category?.name : item.product.category}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button

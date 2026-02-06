@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cmsService } from "@/services/cms";
 import { cmsPagesService, AboutPageContent, PhilosophyPageContent, MaterialsPageContent, QualityPageContent, ContactPageContent } from "@/services/cmsPages";
-import { AboutPageEditor, PhilosophyPageEditor, MaterialsPageEditor, QualityPageEditor, ContactPageEditor } from "@/components/admin/CMSPageEditors";
+import { AboutPageEditor, PhilosophyPageEditor, MaterialsPageEditor, QualityPageEditor, ContactPageEditor, HomePageEditor } from "@/components/admin/CMSPageEditors";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -358,6 +358,7 @@ const CMS = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList className="flex h-auto flex-wrap gap-2 bg-transparent p-0">
                     <TabsTrigger value="about" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">About</TabsTrigger>
+                    <TabsTrigger value="home_page_content" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Home Page Meta</TabsTrigger>
                     <TabsTrigger value="testimonials" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Testimonials</TabsTrigger>
                     <TabsTrigger value="features" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Features</TabsTrigger>
                     <TabsTrigger value="faq" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">FAQ</TabsTrigger>
@@ -676,6 +677,9 @@ const CMS = () => {
                 </TabsContent>
 
                 {/* Page Editor Tabs */}
+                <TabsContent value="home_page_content" className="space-y-4">
+                    <HomePageEditor />
+                </TabsContent>
                 <TabsContent value="about_page" className="space-y-4">
                     <AboutPageEditor />
                 </TabsContent>

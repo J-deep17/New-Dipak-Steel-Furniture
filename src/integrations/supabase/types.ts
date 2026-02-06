@@ -401,208 +401,349 @@ export type Database = {
         }
         Relationships: []
       }
-      product_page_settings: {
-        Row: {
-          created_at: string | null
-          delivery_button_text: string
-          delivery_title: string
-          id: string
-          pincode_placeholder: string
-          pricing_note: string
-          product_tag_label: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          delivery_button_text?: string
-          delivery_title?: string
-          id?: string
-          pincode_placeholder?: string
-          pricing_note?: string
-          product_tag_label?: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          delivery_button_text?: string
-          delivery_title?: string
-          id?: string
-          pincode_placeholder?: string
-          pricing_note?: string
-          product_tag_label?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      product_templates: {
-        Row: {
-          created_at: string
-          dimensions: string | null
-          id: string
-          key_features: string[] | null
-          name: string
-          warranty_care: string[] | null
-          warranty_coverage: string[] | null
-        }
-        Insert: {
-          created_at?: string
-          dimensions?: string | null
-          id?: string
-          key_features?: string[] | null
-          name: string
-          warranty_care?: string[] | null
-          warranty_coverage?: string[] | null
-        }
-        Update: {
-          created_at?: string
-          dimensions?: string | null
-          id?: string
-          key_features?: string[] | null
-          name?: string
-          warranty_care?: string[] | null
-          warranty_coverage?: string[] | null
-        }
-        Relationships: []
-      }
-      products: {
-        Row: {
-          category_id: string | null
-          created_at: string | null
-          description: string | null
-          dimensions: string | null
-          discount_percent: number | null
-          id: string
-          image_url: string | null
-          images: string[] | null
-          is_active: boolean | null
-          key_features: string[] | null
-          mrp: number | null
-          price: number
-          short_description: string | null
-          slug: string | null
-          specifications: Json | null
-          title: string
-          warranty_care: string[] | null
-          warranty_coverage: string[] | null
-        }
-        Insert: {
-          category_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          dimensions?: string | null
-          discount_percent?: number | null
-          id?: string
-          image_url?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          key_features?: string[] | null
-          mrp?: number | null
-          price: number
-          short_description?: string | null
-          slug?: string | null
-          specifications?: Json | null
-          title: string
-          warranty_care?: string[] | null
-          warranty_coverage?: string[] | null
-        }
-        Update: {
-          category_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          dimensions?: string | null
-          discount_percent?: number | null
-          id?: string
-          image_url?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          key_features?: string[] | null
-          mrp?: number | null
-          price?: number
-          short_description?: string | null
-          slug?: string | null
-          specifications?: Json | null
-          title?: string
-          warranty_care?: string[] | null
-          warranty_coverage?: string[] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: string
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          role?: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: string
-        }
-        Relationships: []
-      }
-      wishlist: {
-        Row: {
-          created_at: string
-          id: string
-          product_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          product_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          product_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "wishlist_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wishlist_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      Relationships: []
     }
-    Views: {
-      [_ in never]: never
+    product_variants: {
+      Row: {
+        id: string
+        product_id: string
+        color_name: string
+        color_hex: string | null
+        images: string[] | null
+        price: number | null
+        mrp: number | null
+        stock: number
+        sku: string | null
+        is_active: boolean
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        product_id: string
+        color_name: string
+        color_hex?: string | null
+        images?: string[] | null
+        price?: number | null
+        mrp?: number | null
+        stock?: number
+        sku?: string | null
+        is_active?: boolean
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        product_id?: string
+        color_name?: string
+        color_hex?: string | null
+        images?: string[] | null
+        price?: number | null
+        mrp?: number | null
+        stock?: number
+        sku?: string | null
+        is_active?: boolean
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "product_variants_product_id_fkey"
+          columns: ["product_id"]
+          isOneToOne: false
+          referencedRelation: "products"
+          referencedColumns: ["id"]
+        }
+      ]
     }
-    Functions: {
-      is_admin: { Args: { user_id: string }; Returns: boolean }
+    product_variant_images: {
+      Row: {
+        id: string
+        variant_id: string
+        image_url: string
+        display_order: number // keeping display_order used in services, equivalent to sort_order
+        sort_order: number | null
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        variant_id: string
+        image_url: string
+        display_order?: number
+        sort_order?: number | null
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        variant_id?: string
+        image_url?: string
+        display_order?: number
+        sort_order?: number | null
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "product_variant_images_variant_id_fkey"
+          columns: ["variant_id"]
+          isOneToOne: false
+          referencedRelation: "product_variants"
+          referencedColumns: ["id"]
+        }
+      ]
     }
-    Enums: {
-      [_ in never]: never
+    product_reviews: {
+      Row: {
+        id: string
+        product_id: string
+        user_id: string
+        rating: number
+        title: string | null
+        comment: string | null
+        status: string
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        product_id: string
+        user_id: string
+        rating: number
+        title?: string | null
+        comment?: string | null
+        status?: string
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        product_id?: string
+        user_id?: string
+        rating?: number
+        title?: string | null
+        comment?: string | null
+        status?: string
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "product_reviews_product_id_fkey"
+          columns: ["product_id"]
+          isOneToOne: false
+          referencedRelation: "products"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "product_reviews_user_id_fkey"
+          columns: ["user_id"]
+          isOneToOne: false
+          referencedRelation: "profiles"
+          referencedColumns: ["id"]
+        }
+      ]
     }
-    CompositeTypes: {
-      [_ in never]: never
+    product_page_settings: {
+      Row: {
+        created_at: string | null
+        delivery_button_text: string
+        delivery_title: string
+        id: string
+        pincode_placeholder: string
+        pricing_note: string
+        product_tag_label: string
+        updated_at: string | null
+      }
+      Insert: {
+        created_at?: string | null
+        delivery_button_text?: string
+        delivery_title?: string
+        id?: string
+        pincode_placeholder?: string
+        pricing_note?: string
+        product_tag_label?: string
+        updated_at?: string | null
+      }
+      Update: {
+        created_at?: string | null
+        delivery_button_text?: string
+        delivery_title?: string
+        id?: string
+        pincode_placeholder?: string
+        pricing_note?: string
+        product_tag_label?: string
+        updated_at?: string | null
+      }
+      Relationships: []
+    }
+    product_templates: {
+      Row: {
+        created_at: string
+        dimensions: string | null
+        id: string
+        key_features: string[] | null
+        name: string
+        warranty_care: string[] | null
+        warranty_coverage: string[] | null
+      }
+      Insert: {
+        created_at?: string
+        dimensions?: string | null
+        id?: string
+        key_features?: string[] | null
+        name: string
+        warranty_care?: string[] | null
+        warranty_coverage?: string[] | null
+      }
+      Update: {
+        created_at?: string
+        dimensions?: string | null
+        id?: string
+        key_features?: string[] | null
+        name?: string
+        warranty_care?: string[] | null
+        warranty_coverage?: string[] | null
+      }
+      Relationships: []
+    }
+    products: {
+      Row: {
+        category_id: string | null
+        created_at: string | null
+        description: string | null
+        dimensions: string | null
+        discount_percent: number | null
+        id: string
+        image_url: string | null
+        images: string[] | null
+        is_active: boolean | null
+        key_features: string[] | null
+        mrp: number | null
+        base_mrp: number | null
+        price: number
+        base_price: number
+        short_description: string | null
+        slug: string | null
+        specifications: Json | null
+        title: string
+        warranty_care: string[] | null
+        warranty_coverage: string[] | null
+      }
+      Insert: {
+        category_id?: string | null
+        created_at?: string | null
+        description?: string | null
+        dimensions?: string | null
+        discount_percent?: number | null
+        id?: string
+        image_url?: string | null
+        images?: string[] | null
+        is_active?: boolean | null
+        key_features?: string[] | null
+        mrp?: number | null
+        base_mrp?: number | null
+        price: number
+        base_price?: number
+        short_description?: string | null
+        slug?: string | null
+        specifications?: Json | null
+        title: string
+        warranty_care?: string[] | null
+        warranty_coverage?: string[] | null
+      }
+      Update: {
+        category_id?: string | null
+        created_at?: string | null
+        description?: string | null
+        dimensions?: string | null
+        discount_percent?: number | null
+        id?: string
+        image_url?: string | null
+        images?: string[] | null
+        is_active?: boolean | null
+        key_features?: string[] | null
+        mrp?: number | null
+        base_mrp?: number | null
+        price?: number
+        base_price?: number
+        short_description?: string | null
+        slug?: string | null
+        specifications?: Json | null
+        title?: string
+        warranty_care?: string[] | null
+        warranty_coverage?: string[] | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "products_category_id_fkey"
+          columns: ["category_id"]
+          isOneToOne: false
+          referencedRelation: "categories"
+          referencedColumns: ["id"]
+        },
+      ]
+    }
+    profiles: {
+      Row: {
+        created_at: string | null
+        id: string
+        role: string
+      }
+      Insert: {
+        created_at?: string | null
+        id: string
+        role?: string
+      }
+      Update: {
+        created_at?: string | null
+        id?: string
+        role?: string
+      }
+      Relationships: []
+    }
+    wishlist: {
+      Row: {
+        created_at: string
+        id: string
+        product_id: string
+        user_id: string
+      }
+      Insert: {
+        created_at?: string
+        id?: string
+        product_id: string
+        user_id: string
+      }
+      Update: {
+        created_at?: string
+        id?: string
+        product_id?: string
+        user_id?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "wishlist_product_id_fkey"
+          columns: ["product_id"]
+          isOneToOne: false
+          referencedRelation: "products"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "wishlist_user_id_fkey"
+          columns: ["user_id"]
+          isOneToOne: false
+          referencedRelation: "profiles"
+          referencedColumns: ["id"]
+        },
+      ]
     }
   }
+  Views: {
+    [_ in never]: never
+  }
+  Functions: {
+    is_admin: { Args: { user_id: string }; Returns: boolean }
+  }
+  Enums: {
+    [_ in never]: never
+  }
+  CompositeTypes: {
+    [_ in never]: never
+  }
+}
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">

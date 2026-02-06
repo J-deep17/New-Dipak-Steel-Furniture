@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, FolderTree, LogOut, LayoutTemplate, Image as ImageIcon, Settings } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, FolderTree, LogOut, LayoutTemplate, Image as ImageIcon, Settings, Quote, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
@@ -22,6 +22,9 @@ export const Sidebar = ({ onLogout }: SidebarProps) => {
         { path: "/admin/hero", label: "Hero Banners", icon: ImageIcon },
         { path: "/admin/cms", label: "CMS Layout", icon: LayoutTemplate },
         { path: "/admin/legal", label: "Legal Pages", icon: LayoutTemplate },
+        { path: "/admin/footer-settings", label: "Footer Settings", icon: Settings },
+        { path: "/admin/reviews", label: "Reviews", icon: MessageSquare },
+        { path: "/admin/testimonials", label: "Testimonials", icon: Quote },
         { path: "/admin/product-page-settings", label: "Product Page Settings", icon: Settings },
     ];
 
