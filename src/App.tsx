@@ -36,6 +36,12 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import FooterSettings from "./pages/admin/FooterSettings";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminBlogs from "./pages/admin/AdminBlogs";
+import AdminLocations from "./pages/admin/AdminLocations";
+import AdminSeoPages from "./pages/admin/AdminSeoPages";
+import BlogList from "./pages/BlogList";
+import BlogDetail from "./pages/BlogDetail";
+import SeoPageTemplate from "./pages/SeoPageTemplate";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +63,11 @@ const App = () => (
               <Route path="hero" element={<AdminHero />} />
               <Route path="cms" element={<CMS />} />
               <Route path="legal" element={<AdminLegalPages />} />
+              {/* CMS Routes */}
+              <Route path="blogs" element={<AdminBlogs />} />
+              <Route path="locations" element={<AdminLocations />} />
+              <Route path="seo-pages" element={<AdminSeoPages />} />
+
               <Route path="footer-settings" element={<FooterSettings />} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="product-page-settings" element={<AdminProductPageSettings />} />
@@ -73,6 +84,11 @@ const App = () => (
               </WishlistProvider>
             }>
               <Route path="/" element={<Index />} />
+
+              {/* CMS Public Routes */}
+              <Route path="/blog" element={<BlogList />} />
+              <Route path="/blog/:slug" element={<BlogDetail />} />
+
               <Route path="/login" element={<Login />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/legal/:slug" element={<LegalPage />} />
@@ -85,6 +101,7 @@ const App = () => (
               <Route path="/quality" element={<Quality />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/:slug" element={<SeoPageTemplate />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

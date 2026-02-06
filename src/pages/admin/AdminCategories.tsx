@@ -207,10 +207,22 @@ const AdminCategories = () => {
         if (editingCategory) {
             updateMutation.mutate({
                 id: editingCategory.id,
-                updates: { name, slug, image_url: categoryImageUrl }
+                updates: {
+                    name,
+                    slug,
+                    image_url: categoryImageUrl,
+                    meta_title: formData.get("meta_title"),
+                    meta_description: formData.get("meta_description")
+                }
             });
         } else {
-            createMutation.mutate({ name, slug, image_url: categoryImageUrl });
+            createMutation.mutate({
+                name,
+                slug,
+                image_url: categoryImageUrl,
+                meta_title: formData.get("meta_title") as string,
+                meta_description: formData.get("meta_description") as string
+            });
         }
     };
 
@@ -288,6 +300,14 @@ const AdminCategories = () => {
                         <div className="space-y-2">
                             <Label htmlFor="category-slug">Slug</Label>
                             <Input id="category-slug" name="slug" defaultValue={editingCategory?.slug} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category-meta-title">Meta Title (SEO)</Label>
+                            <Input id="category-meta-title" name="meta_title" defaultValue={editingCategory?.meta_title || ''} placeholder="Optional SEO Title" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category-meta-desc">Meta Description (SEO)</Label>
+                            <Input id="category-meta-desc" name="meta_description" defaultValue={editingCategory?.meta_description || ''} placeholder="Optional SEO Description" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category-image">Category Image</Label>

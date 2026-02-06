@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProtectedImage from "@/components/ProtectedImage";
 import { formatCurrency } from "@/lib/currency";
 import { Link } from "react-router-dom";
 import { Product } from "@/services/products";
@@ -52,7 +53,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Calculate discount if not provided but mrp exists
   let discountDisplay = null;
-  const discountPercent = product.discount_percent || (product.mrp && product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0);
+  const discountPercent = product.discount_percentage || (product.mrp && product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0);
 
   if (discountPercent > 0) {
     discountDisplay = <Badge className="absolute left-3 top-3 bg-red-500 hover:bg-red-600">{discountPercent}% OFF</Badge>;
@@ -61,10 +62,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-lg h-full">
       <Link to={productLink} className="relative aspect-square w-full overflow-hidden bg-secondary/50 block">
-        <img
+        <ProtectedImage
           src={imageSrc}
           alt={product.title}
           className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
+          containerClassName="h-full w-full"
         />
         {discountDisplay}
 
@@ -139,10 +141,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
             setIsZoomOpen(false);
           }}
         >
-          <img
+          <ProtectedImage
             src={imageSrc}
             alt={product.title}
             className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+            containerClassName="flex items-center justify-center p-4"
+            showWatermark={false} // Maybe hide watermark in zoom for better view, or keep it? User didn't specify. Safe to keep basic protection.
           />
           <button className="absolute top-4 right-4 text-white p-2">
             Close

@@ -163,7 +163,20 @@ const AdminHero = () => {
             order_index: parseInt(formData.get("order_index") as string) || 0,
             overlay_opacity: parseFloat(formData.get("overlay_opacity") as string) || 0.3,
             is_active: formData.get("is_active") === "on",
-            advance_after_video: formData.get("advance_after_video") === "on"
+            advance_after_video: formData.get("advance_after_video") === "on",
+
+            // Text Styling
+            title_color: formData.get("title_color") as string,
+            title_font_size: formData.get("title_font_size") as string,
+            title_font_weight: formData.get("title_font_weight") as string,
+            subtitle_color: formData.get("subtitle_color") as string,
+            subtitle_font_size: formData.get("subtitle_font_size") as string,
+            subtitle_font_weight: formData.get("subtitle_font_weight") as string,
+            text_animation: formData.get("text_animation") as string,
+
+            // Layout
+            vertical_alignment: formData.get("vertical_alignment") as string,
+            content_width: formData.get("content_width") as string,
         };
 
         if (editingBanner) {
@@ -184,7 +197,14 @@ const AdminHero = () => {
             show_arrows: formData.get("show_arrows") === "on",
             show_dots: formData.get("show_dots") === "on",
             pause_on_hover: formData.get("pause_on_hover") === "on",
-            transition_effect: formData.get("transition_effect") as "fade" | "slide"
+            transition_effect: formData.get("transition_effect") as "fade" | "slide",
+
+            // Global Layout
+            content_vertical_align: formData.get("content_vertical_align") as string,
+            content_horizontal_align: formData.get("content_horizontal_align") as string,
+            heading_align: formData.get("heading_align") as string,
+            subheading_align: formData.get("subheading_align") as string,
+            button_align: formData.get("button_align") as string
         };
 
         updateSettings.mutate({ id: settings.id, updates });
@@ -372,6 +392,117 @@ const AdminHero = () => {
                             </div>
                         </div>
 
+                        {/* Layout Settings Section */}
+                        <div className="border border-border p-4 rounded-lg space-y-4">
+                            <h3 className="font-semibold text-sm">Layout Settings</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="vertical_alignment">Vertical Alignment</Label>
+                                    <Select name="vertical_alignment" defaultValue={editingBanner?.vertical_alignment || "center"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="top">Top</SelectItem>
+                                            <SelectItem value="center">Center</SelectItem>
+                                            <SelectItem value="bottom">Bottom</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="content_width">Content Width</Label>
+                                    <Select name="content_width" defaultValue={editingBanner?.content_width || "large"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="small">Small (Max-w-md)</SelectItem>
+                                            <SelectItem value="medium">Medium (Max-w-2xl)</SelectItem>
+                                            <SelectItem value="large">Large (Max-w-4xl)</SelectItem>
+                                            <SelectItem value="full">Full Width</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Text Styling Section */}
+                        <div className="border border-border p-4 rounded-lg space-y-4">
+                            <h3 className="font-semibold text-sm">Text Styling</h3>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="title_color">Title Color</Label>
+                                    <Input id="title_color" name="title_color" type="color" defaultValue={editingBanner?.title_color || "#ffffff"} className="h-10 w-full p-1" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="title_font_size">Title Size</Label>
+                                    <Select name="title_font_size" defaultValue={editingBanner?.title_font_size || "text-4xl md:text-6xl lg:text-7xl"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="text-2xl md:text-4xl">Small</SelectItem>
+                                            <SelectItem value="text-3xl md:text-5xl">Medium</SelectItem>
+                                            <SelectItem value="text-4xl md:text-6xl lg:text-7xl">Large (Default)</SelectItem>
+                                            <SelectItem value="text-5xl md:text-7xl lg:text-8xl">Extra Large</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="title_font_weight">Title Weight</Label>
+                                    <Select name="title_font_weight" defaultValue={editingBanner?.title_font_weight || "font-bold"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="font-normal">Normal</SelectItem>
+                                            <SelectItem value="font-medium">Medium</SelectItem>
+                                            <SelectItem value="font-semibold">Semibold</SelectItem>
+                                            <SelectItem value="font-bold">Bold</SelectItem>
+                                            <SelectItem value="font-extrabold">Extra Bold</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="text_animation">Animation</Label>
+                                    <Select name="text_animation" defaultValue={editingBanner?.text_animation || "fade-up"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="fade-up">Fade Up</SelectItem>
+                                            <SelectItem value="fade-in">Fade In</SelectItem>
+                                            <SelectItem value="zoom-in">Zoom In</SelectItem>
+                                            <SelectItem value="slide-in-right">Slide Right</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="subtitle_color">Subtitle Color</Label>
+                                    <Input id="subtitle_color" name="subtitle_color" type="color" defaultValue={editingBanner?.subtitle_color || "#e5e7eb"} className="h-10 w-full p-1" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="subtitle_font_size">Subtitle Size</Label>
+                                    <Select name="subtitle_font_size" defaultValue={editingBanner?.subtitle_font_size || "text-lg md:text-xl"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="text-sm md:text-base">Small</SelectItem>
+                                            <SelectItem value="text-base md:text-lg">Medium</SelectItem>
+                                            <SelectItem value="text-lg md:text-xl">Large (Default)</SelectItem>
+                                            <SelectItem value="text-xl md:text-2xl">Extra Large</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="subtitle_font_weight">Subtitle Weight</Label>
+                                    <Select name="subtitle_font_weight" defaultValue={editingBanner?.subtitle_font_weight || "font-medium"}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="font-normal">Normal</SelectItem>
+                                            <SelectItem value="font-medium">Medium</SelectItem>
+                                            <SelectItem value="font-semibold">Semibold</SelectItem>
+                                            <SelectItem value="font-bold">Bold</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex items-center space-x-2">
                             <input
                                 type="checkbox"
@@ -453,16 +584,77 @@ const AdminHero = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
+
+                                <div className="border-t pt-4">
+                                    <h4 className="font-semibold mb-3 text-sm">Global Layout Settings</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="content_vertical_align">Content Vertical Align</Label>
+                                            <Select name="content_vertical_align" defaultValue={settings.content_vertical_align || "center"}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="top">Top</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="bottom">Bottom</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="content_horizontal_align">Content Horizontal Align</Label>
+                                            <Select name="content_horizontal_align" defaultValue={settings.content_horizontal_align || "center"}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="heading_align">Heading Align</Label>
+                                            <Select name="heading_align" defaultValue={settings.heading_align || "center"}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="subheading_align">Subheading Align</Label>
+                                            <Select name="subheading_align" defaultValue={settings.subheading_align || "center"}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="button_align">Button Align</Label>
+                                            <Select name="button_align" defaultValue={settings.button_align || "center"}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <Button type="submit" className="w-full" disabled={updateSettings.isPending}>
                                 {updateSettings.isPending && <Loader2 className="animate-spin mr-2" />}
                                 Save Settings
                             </Button>
-                        </form>
+                        </form >
                     )}
-                </DialogContent>
-            </Dialog>
-        </div>
+                </DialogContent >
+            </Dialog >
+        </div >
     );
 };
 

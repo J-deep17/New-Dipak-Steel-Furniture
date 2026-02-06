@@ -30,6 +30,10 @@ export interface Product {
     is_featured: boolean | null;
     is_on_sale: boolean | null;
     sale_price: number | null;
+    // SEO Fields
+    meta_title?: string | null;
+    meta_description?: string | null;
+    image_alt?: string | null;
     category?: {
         name: string;
         slug: string;
@@ -95,6 +99,13 @@ export type TemplateInsert = any;
 // Ensure ProductVariantInsert extends the DB insert type or is compatible
 // (It seems manually defined above, but we can stick with manual for now or switch to DB types. 
 // Given the error, we might want to cast or ensure exact match, but let's first fix the missing types).
+
+export interface SearchSuggestion {
+    id: string;
+    title: string;
+    type: 'product' | 'category';
+    slug: string;
+}
 
 export interface ProductFilters {
     categorySlug?: string;
@@ -454,5 +465,65 @@ export const productService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    // --- Search ---
+    getSearchSuggestions: async (query: string): Promise<SearchSuggestion[]> => {
+        if (!query || query.length < 2) return [];
+
+        const sanitizedQuery = query.trim();
+
+        // Parallel fetch for products and categories
+        const [productsRes, categoriesRes] = await Promise.all([
+            supabase
+                .from('products')
+                .select('id, title, slug')
+                .ilike('title', `%${sanitizedQuery}%`)
+                .eq('is_active', true)
+                .limit(10),
+            supabase
+                .from('categories')
+                .select('id, name, slug')
+                .ilike('name', `%${sanitizedQuery}%`)
+                .limit(5)
+        ]);
+
+        const products: SearchSuggestion[] = (productsRes.data || []).map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            type: 'product',
+            slug: p.slug
+        }));
+
+        const categories: SearchSuggestion[] = (categoriesRes.data || []).map((c: any) => ({
+            id: c.id,
+            title: c.name,
+            type: 'category',
+            slug: c.slug
+        }));
+
+        const all = [...categories, ...products];
+
+        // Sort: Exact match > Starts with > Contains
+        const lowerQuery = sanitizedQuery.toLowerCase();
+
+        all.sort((a, b) => {
+            const aTitle = a.title.toLowerCase();
+            const bTitle = b.title.toLowerCase();
+
+            const aExact = aTitle === lowerQuery;
+            const bExact = bTitle === lowerQuery;
+            if (aExact && !bExact) return -1;
+            if (!aExact && bExact) return 1;
+
+            const aStarts = aTitle.startsWith(lowerQuery);
+            const bStarts = bTitle.startsWith(lowerQuery);
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+
+            return aTitle.localeCompare(bTitle);
+        });
+
+        return all.slice(0, 10);
     }
 };

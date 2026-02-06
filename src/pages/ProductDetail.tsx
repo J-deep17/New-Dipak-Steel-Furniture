@@ -6,7 +6,7 @@ import { analyticsService } from "@/services/analytics";
 import { productPageSettingsService } from "@/services/productPageSettings";
 import { reviewService } from "@/services/reviews";
 import Layout from "@/components/layout/Layout";
-import SEOHead from "@/components/seo/SEOHead";
+import SEO from "@/components/SEO";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import ProductImageGallery from "@/components/pdp/ProductImageGallery";
@@ -30,6 +30,10 @@ const mapProductToUI = (product: any) => ({
   features: product.key_features && product.key_features.length > 0 ? product.key_features : [product.short_description].filter(Boolean),
   description: product.description || "",
   images: product.images && product.images.length > 0 ? product.images : [product.image_url].filter(Boolean),
+  // SEO Fields
+  meta_title: product.meta_title,
+  meta_description: product.meta_description,
+  image_alt: product.image_alt,
   colorVariants: [],
   isNew: false,
   backHeight: null,
@@ -89,9 +93,9 @@ const ProductDetail = () => {
   });
 
   const { data: relatedProducts } = useQuery({
-    queryKey: ["related-products", product?.category?.slug],
-    queryFn: () => productService.getProducts({ categorySlug: product?.category?.slug }),
-    enabled: !!product?.category?.slug,
+    queryKey: ["related-products", (product as any)?.category?.slug],
+    queryFn: () => productService.getProducts({ categorySlug: (product as any)?.category?.slug }),
+    enabled: !!(product as any)?.category?.slug,
     select: (products) =>
       products
         .filter(p => p.id !== product?.id)
@@ -190,22 +194,34 @@ const ProductDetail = () => {
     }
   };
 
-  const metaTitle = `${product.title} | ${uiProduct.category} | Dipak Furniture`;
-  const metaDescription = product.short_description || `Buy ${product.title} from Dipak Furniture.`;
-
   return (
     <Layout>
-      <SEOHead
-        title={metaTitle}
-        description={metaDescription}
-        keywords={`${product.title}, ${uiProduct.category}, office furniture`}
-        canonicalUrl={`https://dipaksteelfurniture.lovable.app/product/${product.id}`}
+      <SEO
+        title={uiProduct.meta_title || uiProduct.name}
+        description={uiProduct.meta_description || uiProduct.short_description || uiProduct.description.slice(0, 160)}
+        canonicalUrl={`https://steelshow.com/product/${uiProduct.slug}`}
+        ogImage={uiProduct.images[0]}
+        ogType="product"
+        jsonLd={{
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          "name": uiProduct.name,
+          "image": uiProduct.images,
+          "description": uiProduct.description,
+          "sku": uiProduct.id,
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "INR",
+            "price": uiProduct.sale_price || uiProduct.price,
+            "availability": "https://schema.org/InStock"
+          }
+        }}
       />
 
       <div className="bg-background min-h-screen">
         <div className="container mx-auto px-4 py-6">
           {/* Breadcrumb - Need to handle prop mismatch or refactor Breadcrumb */}
-          {/* Passing simpler props or skipping for now if complex. 
+          {/* Passing simpler props or skipping for now if complex.
               Let's allow ProductBreadcrumb to take any for now or refactor it next. */}
           <ProductBreadcrumb product={uiProduct as any} category={{ name: uiProduct.category, slug: uiProduct.categorySlug } as any} />
 

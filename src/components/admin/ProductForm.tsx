@@ -17,6 +17,7 @@ import { Loader2, Upload, Plus, Trash2, X, ChevronDown, ChevronUp } from "lucide
 import { toast } from "sonner";
 import { adminService } from "@/services/admin";
 import { productService, ProductVariant, ProductVariantImage, Product } from "@/services/products";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ProductFormProps {
     product?: Product | null;
@@ -62,6 +63,10 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
         is_on_sale: false,
         is_featured: false,
         sale_price: null as number | null,
+        // SEO Fields
+        meta_title: "",
+        meta_description: "",
+        image_alt: "",
     });
 
     // Section 2: Variants
@@ -73,6 +78,9 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
         warranty_coverage: "",
         warranty_care: "",
     });
+    const [detailedSpecs, setDetailedSpecs] = useState<Record<string, string>>({});
+    const [isBulkSpecsOpen, setIsBulkSpecsOpen] = useState(false);
+    const [bulkSpecsText, setBulkSpecsText] = useState("");
 
     // Section 4 is Active Toggle (included in Basic Info mostly, or separate)
 
@@ -106,6 +114,10 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 is_on_sale: product.is_on_sale ?? false,
                 is_featured: product.is_featured ?? false,
                 sale_price: product.sale_price || null,
+                // SEO Fields
+                meta_title: product.meta_title || "",
+                meta_description: product.meta_description || "",
+                image_alt: product.image_alt || "",
             });
 
             if (product.variants) {
@@ -128,6 +140,8 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 warranty_coverage: (product.warranty_coverage || []).join("\n"),
                 warranty_care: (product.warranty_care || []).join("\n"),
             });
+
+            setDetailedSpecs(product.specifications || {});
         }
     }, [product]);
 
@@ -143,6 +157,40 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
             title,
             slug: !product ? generateSlug(title) : prev.slug // Only auto-gen if new product
         }));
+    };
+
+    const handleBulkSpecsSave = () => {
+        if (!bulkSpecsText.trim()) return;
+
+        const lines = bulkSpecsText.split('\n');
+        const newSpecs: Record<string, string> = { ...detailedSpecs }; // Start with existing
+
+        let addedCount = 0;
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+
+            const separatorIndex = trimmed.indexOf(':');
+            if (separatorIndex !== -1) {
+                const key = trimmed.substring(0, separatorIndex).trim();
+                const value = trimmed.substring(separatorIndex + 1).trim();
+
+                if (key && value) {
+                    newSpecs[key] = value;
+                    addedCount++;
+                }
+            }
+        });
+
+        if (addedCount > 0) {
+            setDetailedSpecs(newSpecs);
+            setBulkSpecsText("");
+            setIsBulkSpecsOpen(false);
+            toast.success(`Added ${addedCount} specifications`);
+        } else {
+            toast.warning("No valid 'Key: Value' lines found");
+        }
     };
 
     // Variant Handlers
@@ -244,6 +292,7 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 dimensions: specs.dimensions,
                 warranty_coverage: specs.warranty_coverage.split('\n').filter(Boolean),
                 warranty_care: specs.warranty_care.split('\n').filter(Boolean),
+                specifications: detailedSpecs,
                 image_url: variants[0]?.images?.[0]?.image_url || variants[0]?.temp_images?.[0] || null,
                 // Marketing fields
                 discount_percentage: basicInfo.discount_percentage,
@@ -252,6 +301,10 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 is_on_sale: basicInfo.is_on_sale,
                 is_featured: basicInfo.is_featured,
                 sale_price: basicInfo.sale_price,
+                // SEO Fields
+                meta_title: basicInfo.meta_title,
+                meta_description: basicInfo.meta_description,
+                image_alt: basicInfo.image_alt,
             };
 
             console.log('[ProductForm] Saving product data:', productData);
@@ -314,7 +367,7 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-h-[80vh] overflow-y-auto p-1">
+        <form onSubmit={handleSubmit} className="space-y-8 p-1">
             {/* Section 1: Basic Info */}
             <div className="space-y-4 border p-4 rounded-lg bg-gray-50/50">
                 <h3 className="text-lg font-medium">Basic Information</h3>
@@ -434,6 +487,37 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 </div>
             </div>
 
+
+            {/* Section 1.5: SEO & Metadata */}
+            <div className="space-y-4 border p-4 rounded-lg bg-blue-50/50">
+                <h3 className="text-lg font-medium text-blue-900">SEO & Metadata</h3>
+                <div className="space-y-2">
+                    <Label>Meta Title</Label>
+                    <Input
+                        value={basicInfo.meta_title}
+                        onChange={e => setBasicInfo({ ...basicInfo, meta_title: e.target.value })}
+                        placeholder="SEO Title (defaults to product title if empty)"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label>Meta Description</Label>
+                    <Textarea
+                        value={basicInfo.meta_description}
+                        onChange={e => setBasicInfo({ ...basicInfo, meta_description: e.target.value })}
+                        rows={2}
+                        placeholder="SEO Description (defaults to short description if empty)"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label>Image Alt Text</Label>
+                    <Input
+                        value={basicInfo.image_alt}
+                        onChange={e => setBasicInfo({ ...basicInfo, image_alt: e.target.value })}
+                        placeholder="Alt text for main image (accessibility)"
+                    />
+                </div>
+            </div>
+
             {/* Section 2: Variants */}
             <div className="space-y-4 border p-4 rounded-lg bg-gray-50/50">
                 <div className="flex justify-between items-center">
@@ -513,6 +597,8 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
             {/* Section 3: Specifications */}
             <div className="space-y-4 border p-4 rounded-lg bg-gray-50/50">
                 <h3 className="text-lg font-medium">Specifications</h3>
+
+                {/* Standard Specs */}
                 <div className="space-y-2">
                     <Label>Dimensions</Label>
                     <Input value={specs.dimensions} onChange={e => setSpecs({ ...specs, dimensions: e.target.value })} placeholder="e.g. 100x50x20 cm" />
@@ -527,7 +613,68 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                         <Textarea value={specs.warranty_care} onChange={e => setSpecs({ ...specs, warranty_care: e.target.value })} rows={3} />
                     </div>
                 </div>
+
+                {/* Detailed Specifications (Bulk Add) */}
+                <div className="mt-6 pt-6 border-t">
+                    <div className="flex justify-between items-center mb-4">
+                        <Label className="text-base">Detailed Specifications</Label>
+                        <Button type="button" variant="outline" size="sm" onClick={() => setIsBulkSpecsOpen(true)}>
+                            <Plus className="w-4 h-4 mr-2" /> Bulk Add Specifications
+                        </Button>
+                    </div>
+
+                    {Object.keys(detailedSpecs).length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 bg-white p-4 rounded border">
+                            {Object.entries(detailedSpecs).map(([key, value], idx) => (
+                                <div key={idx} className="flex justify-between items-start p-2 border-b last:border-0 text-sm">
+                                    <div className="grid grid-cols-2 gap-2 w-full mr-2">
+                                        <span className="font-semibold text-muted-foreground">{key}</span>
+                                        <span>{value}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newSpecs = { ...detailedSpecs };
+                                            delete newSpecs[key];
+                                            setDetailedSpecs(newSpecs);
+                                        }}
+                                        className="text-red-500 hover:bg-red-50 p-1 rounded"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground italic">No additional specifications added.</p>
+                    )}
+                </div>
             </div>
+
+            {/* Bulk Specs Dialog */}
+            <Dialog open={isBulkSpecsOpen} onOpenChange={setIsBulkSpecsOpen}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Bulk Add Specifications</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Paste Specifications</Label>
+                            <Textarea
+                                value={bulkSpecsText}
+                                onChange={e => setBulkSpecsText(e.target.value)}
+                                rows={10}
+                                placeholder={`Enter one specification per line, e.g.:\nBrand: Dipak Furniture\nModel: Director HB Premium\nMaterial: Leather`}
+                                className="font-mono text-sm"
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setIsBulkSpecsOpen(false)}>Cancel</Button>
+                            <Button type="button" onClick={handleBulkSpecsSave}>Apply</Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Section 4: Actions */}
             <div className="flex justify-between items-center border-t pt-4">

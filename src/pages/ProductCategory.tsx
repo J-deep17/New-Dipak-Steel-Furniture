@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
-import SEOHead from "@/components/seo/SEOHead";
+import SEO from "@/components/SEO";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { productService, Product, ProductFilters as ProductFiltersType } from "@/services/products";
@@ -216,9 +216,11 @@ const ProductCategory = () => {
 
     return (
         <Layout>
-            <SEOHead
-                title={`${category?.name || 'Products'} | Dipak Furniture`}
-                description={`Browse our ${category?.name || 'products'} collection.`}
+            <SEO
+                title={category?.meta_title || `${category?.name || 'Products'} | Dipak Furniture`}
+                description={category?.meta_description || `Browse our ${category?.name || 'products'} collection.`}
+                canonicalUrl={`https://steelshow.com/products/${categorySlug}`}
+                ogType="website"
             />
 
             {/* Minimal Header - Nike Style */}

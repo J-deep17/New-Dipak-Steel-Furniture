@@ -1,159 +1,108 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 
-export type HeroData = Database['public']['Tables']['homepage_hero']['Row'];
-export type StatData = Database['public']['Tables']['homepage_stats']['Row'];
-export type CategoryData = Database['public']['Tables']['homepage_categories']['Row'];
-export type AboutData = Database['public']['Tables']['homepage_about']['Row'];
-export type TestimonialData = Database['public']['Tables']['homepage_testimonials']['Row'];
-export type FeatureData = Database['public']['Tables']['homepage_features']['Row'];
-export type FAQData = Database['public']['Tables']['homepage_faq']['Row'];
-export type CTAData = Database['public']['Tables']['homepage_cta']['Row'];
+export interface Blog {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    meta_title: string;
+    meta_description: string;
+    featured_image: string;
+    status: 'draft' | 'published';
+    created_at: string;
+    updated_at: string;
+}
 
-export type CategoryInsert = Database['public']['Tables']['homepage_categories']['Insert'];
-export type StatInsert = Database['public']['Tables']['homepage_stats']['Insert'];
-export type FeatureInsert = Database['public']['Tables']['homepage_features']['Insert'];
-export type FAQInsert = Database['public']['Tables']['homepage_faq']['Insert'];
-export type TestimonialInsert = Database['public']['Tables']['homepage_testimonials']['Insert'];
+export interface Location {
+    id: string;
+    city: string;
+    state: string;
+    created_at: string;
+}
 
+export interface SeoPage {
+    id: string;
+    page_type: string;
+    slug: string;
+    heading: string;
+    content: string;
+    meta_title: string;
+    meta_description: string;
+    status: 'draft' | 'published';
+    created_at: string;
+    updated_at: string;
+}
 
 export const cmsService = {
-    // Fetch all data for the homepage
-    getHomepageData: async () => {
-        try {
-            const [
-                hero, stats, categories, about, testimonials, features, faq, cta
-            ] = await Promise.all([
-                supabase.from('homepage_hero').select('*').single(),
-                supabase.from('homepage_stats').select('*'),
-                supabase.from('homepage_categories').select('*'),
-                supabase.from('homepage_about').select('*').single(),
-                supabase.from('homepage_testimonials').select('*'),
-                supabase.from('homepage_features').select('*'),
-                supabase.from('homepage_faq').select('*'),
-                supabase.from('homepage_cta').select('*').single(),
-            ]);
-
-            return {
-                hero: hero.data,
-                stats: stats.data || [],
-                categories: categories.data || [],
-                about: about.data,
-                testimonials: testimonials.data || [],
-                features: features.data || [],
-                faq: faq.data || [],
-                cta: cta.data,
-            };
-        } catch (error) {
-            console.error('Error fetching homepage data:', error);
-            throw error;
+    // Blogs
+    getBlogs: async (publishedOnly = false) => {
+        let query = supabase.from('blogs' as any).select('*').order('created_at', { ascending: false });
+        if (publishedOnly) {
+            query = query.eq('status', 'published');
         }
+        return await query;
+    },
+    getBlogBySlug: async (slug: string) => {
+        return await supabase.from('blogs' as any).select('*').eq('slug', slug).single();
+    },
+    createBlog: async (data: Partial<Blog>) => {
+        return await supabase.from('blogs' as any).insert(data as any).select().single();
+    },
+    updateBlog: async (id: string, data: Partial<Blog>) => {
+        return await supabase.from('blogs' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id).select().single();
+    },
+    deleteBlog: async (id: string) => {
+        return await supabase.from('blogs' as any).delete().eq('id', id);
     },
 
-    // Update specific sections
-    updateHero: async (data: Partial<HeroData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_hero').update(data).eq('id', data.id);
-        if (error) throw error;
+    // Locations
+    getLocations: async () => {
+        return await supabase.from('locations' as any).select('*').order('city', { ascending: true });
+    },
+    createLocation: async (data: Partial<Location>) => {
+        return await supabase.from('locations' as any).insert(data as any).select().single();
+    },
+    createLocationsBulk: async (data: Partial<Location>[]) => {
+        return await supabase.from('locations' as any).upsert(data as any, { onConflict: 'city', ignoreDuplicates: true }).select();
+    },
+    updateLocation: async (id: string, data: Partial<Location>) => {
+        return await supabase.from('locations' as any).update(data as any).eq('id', id).select().single();
+    },
+    deleteLocation: async (id: string) => {
+        return await supabase.from('locations' as any).delete().eq('id', id);
     },
 
-    updateAbout: async (data: Partial<AboutData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_about').update(data).eq('id', data.id);
-        if (error) throw error;
+    // SEO Pages
+    getSeoPages: async (publishedOnly = false) => {
+        let query = supabase.from('seo_pages' as any).select('*').order('created_at', { ascending: false });
+        if (publishedOnly) {
+            query = query.eq('status', 'published');
+        }
+        return await query;
+    },
+    getSeoPageBySlug: async (slug: string) => {
+        return await supabase.from('seo_pages' as any).select('*').eq('slug', slug).single();
+    },
+    createSeoPage: async (data: Partial<SeoPage>) => {
+        return await supabase.from('seo_pages' as any).insert(data as any).select().single();
+    },
+    updateSeoPage: async (id: string, data: Partial<SeoPage>) => {
+        return await supabase.from('seo_pages' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id).select().single();
+    },
+    deleteSeoPage: async (id: string) => {
+        return await supabase.from('seo_pages' as any).delete().eq('id', id);
     },
 
-    updateCTA: async (data: Partial<CTAData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_cta').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-
-    // Image Upload
+    // Helper: Upload Image (for rich text editor or featured image)
     uploadImage: async (file: File) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
+        const filePath = `cms-images/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from('cms-uploads')
-            .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage.from('products').upload(filePath, file); // reusing products bucket for simplicity or create new 'cms' bucket
+        if (uploadError) throw uploadError;
 
-        if (uploadError) {
-            throw uploadError;
-        }
-
-        const { data } = supabase.storage.from('cms-uploads').getPublicUrl(filePath);
+        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
         return data.publicUrl;
-    },
-
-
-    // Generic CRUD for list items (Stats, Categories, Testimonials, Features, FAQ)
-
-    // Stats
-    createStat: async (data: StatInsert) => {
-        const { error } = await supabase.from('homepage_stats').insert(data);
-        if (error) throw error;
-    },
-    updateStat: async (data: Partial<StatData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_stats').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-    deleteStat: async (id: string) => {
-        const { error } = await supabase.from('homepage_stats').delete().eq('id', id);
-        if (error) throw error;
-    },
-
-    // Categories
-    createCategory: async (data: CategoryInsert) => {
-        const { error } = await supabase.from('homepage_categories').insert(data);
-        if (error) throw error;
-    },
-    updateCategory: async (data: Partial<CategoryData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_categories').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-    deleteCategory: async (id: string) => {
-        const { error } = await supabase.from('homepage_categories').delete().eq('id', id);
-        if (error) throw error;
-    },
-
-    // Testimonials
-    createTestimonial: async (data: TestimonialInsert) => {
-        const { error } = await supabase.from('homepage_testimonials').insert(data);
-        if (error) throw error;
-    },
-    updateTestimonial: async (data: Partial<TestimonialData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_testimonials').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-    deleteTestimonial: async (id: string) => {
-        const { error } = await supabase.from('homepage_testimonials').delete().eq('id', id);
-        if (error) throw error;
-    },
-
-    // Features
-    createFeature: async (data: FeatureInsert) => {
-        const { error } = await supabase.from('homepage_features').insert(data);
-        if (error) throw error;
-    },
-    updateFeature: async (data: Partial<FeatureData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_features').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-    deleteFeature: async (id: string) => {
-        const { error } = await supabase.from('homepage_features').delete().eq('id', id);
-        if (error) throw error;
-    },
-
-    // FAQ
-    createFAQ: async (data: FAQInsert) => {
-        const { error } = await supabase.from('homepage_faq').insert(data);
-        if (error) throw error;
-    },
-    updateFAQ: async (data: Partial<FAQData> & { id: string }) => {
-        const { error } = await supabase.from('homepage_faq').update(data).eq('id', data.id);
-        if (error) throw error;
-    },
-    deleteFAQ: async (id: string) => {
-        const { error } = await supabase.from('homepage_faq').delete().eq('id', id);
-        if (error) throw error;
     }
 };

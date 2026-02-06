@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProtectedImage from "@/components/ProtectedImage";
 import { cn } from "@/lib/utils";
 import { Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,10 +113,12 @@ const ProductImageGallery = ({ images, productName, productId }: ProductImageGal
                         )}
                         aria-label={`View image ${index + 1} of ${productName} `}
                     >
-                        <img
+                        <ProtectedImage
                             src={image}
                             alt={`${productName} thumbnail ${index + 1} `}
                             className="w-full h-full object-cover"
+                            containerClassName="w-full h-full"
+                            showWatermark={false}
                         />
                     </button>
                 ))}
@@ -133,10 +136,11 @@ const ProductImageGallery = ({ images, productName, productId }: ProductImageGal
                 onMouseEnter={(e) => !isHoveringControl && handleMouseMove(e)}
             >
                 {/* Base Image */}
-                <img
+                <ProtectedImage
                     src={currentImage}
                     alt={productName}
                     className="w-full h-full object-cover"
+                    containerClassName="w-full h-full"
                 />
 
                 {/* Circular Magnifier Lens - True Lens Logic */}
